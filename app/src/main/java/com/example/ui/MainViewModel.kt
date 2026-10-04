@@ -15,6 +15,7 @@ import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
 import java.util.UUID
+import com.example.R
 
 enum class SortMode {
     CARD_NEWEST,      // New (Card Date - Newest)
@@ -75,6 +76,7 @@ data class ActiveInlineVideoPlayback(
 )
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
+    private val app = application
     private val repository: VaultRepository
 
     private val _isSplashLoading = MutableStateFlow(true)
@@ -134,6 +136,27 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
             _splashProgress.value = 0.80f
             _splashStatus.value = "تحميل الوسائط والتأثيرات..."
+
+            // Pre-warm and cache button system assets in background on IO thread so they are instantly loaded when clicking cardlink
+            try {
+                val ids = listOf(
+                    R.drawable.ic_magnet,
+                    R.drawable.ic_url_link,
+                    R.drawable.ic_bookmark_saved,
+                    R.drawable.ic_bookmark_save,
+                    R.drawable.ic_edit_pencil,
+                    R.drawable.ic_delete_trash,
+                    R.drawable.ic_quality_hd,
+                    R.drawable.ic_quality_4k,
+                    R.drawable.ic_action_cancel
+                )
+                ids.forEach { id ->
+                    androidx.core.content.res.ResourcesCompat.getDrawable(app.resources, id, app.theme)
+                }
+            } catch (e: Exception) {
+                // Graceful fallback if resources or theme are not fully ready yet
+            }
+
             kotlinx.coroutines.delay(250L)
 
             // Insert sample test dataset scenes, actors, and studios into the database atomically if empty

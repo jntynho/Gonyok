@@ -403,19 +403,9 @@ fun LinkCard(
                         AnimatedContent(
                             targetState = if (isOverlayActive) currentMenuState else lastOpenMenuState,
                             transitionSpec = {
-                                if (targetState != CardActionMenuState.CLOSED && initialState != CardActionMenuState.CLOSED) {
-                                    // Smooth depth scale + fade transition when switching between submenus (Main <-> Quality HD/4K <-> Delete/Cancel)
-                                    (fadeIn(animationSpec = tween(220, easing = LinearOutSlowInEasing)) +
-                                            scaleIn(initialScale = 0.82f, animationSpec = spring(dampingRatio = 0.65f, stiffness = Spring.StiffnessMediumLow)))
-                                        .togetherWith(
-                                            fadeOut(animationSpec = tween(160, easing = FastOutLinearInEasing)) +
-                                                    scaleOut(targetScale = 0.85f, animationSpec = tween(160, easing = FastOutLinearInEasing))
-                                        )
-                                } else {
-                                    // General overlay fade open / close transition
-                                    fadeIn(animationSpec = tween(220, easing = LinearOutSlowInEasing)) togetherWith
-                                            fadeOut(animationSpec = tween(180, easing = FastOutLinearInEasing))
-                                }
+                                // Pure smooth crossfade when switching between submenus to prevent container double-scaling distortion
+                                fadeIn(animationSpec = tween(220, easing = LinearOutSlowInEasing)) togetherWith
+                                        fadeOut(animationSpec = tween(180, easing = FastOutLinearInEasing))
                             },
                             contentAlignment = Alignment.Center,
                             modifier = Modifier.fillMaxWidth(),
