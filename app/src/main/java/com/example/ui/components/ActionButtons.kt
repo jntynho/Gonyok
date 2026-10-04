@@ -105,7 +105,7 @@ fun ActionCircleButton(
         }
     }
 
-    // Zoom-in / Pop-out from center with soft spring bounce overshoot
+    // Zoom-in / Pop-out from center with soft spring bounce overshoot on enter, smooth spring shrink on exit
     val entranceScale by animateFloatAsState(
         targetValue = if (isItemExpanded) 1f else 0.12f,
         animationSpec = if (isItemExpanded) {
@@ -114,9 +114,9 @@ fun ActionCircleButton(
                 stiffness = Spring.StiffnessLow
             )
         } else {
-            tween(
-                durationMillis = 220,
-                easing = FastOutLinearInEasing
+            spring(
+                dampingRatio = 0.82f, // Smooth physics collapse
+                stiffness = Spring.StiffnessMediumLow
             )
         },
         label = "entranceScale"
@@ -127,12 +127,12 @@ fun ActionCircleButton(
         targetValue = if (isItemExpanded) 1f else 0f,
         animationSpec = if (isItemExpanded) {
             tween(
-                durationMillis = 300,
+                durationMillis = 280,
                 easing = LinearOutSlowInEasing
             )
         } else {
             tween(
-                durationMillis = 200,
+                durationMillis = 180,
                 easing = FastOutLinearInEasing
             )
         },
