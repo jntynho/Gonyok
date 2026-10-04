@@ -253,6 +253,12 @@ fun LinkCard(
         label = "cover_reveal_alpha"
     )
 
+    val coverScale by animateFloatAsState(
+        targetValue = if (isOverlayActive) 1.06f else 1.0f,
+        animationSpec = tween(durationMillis = 520, easing = FastOutSlowInEasing),
+        label = "cover_scale"
+    )
+
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -339,6 +345,8 @@ fun LinkCard(
                             )
                             .graphicsLayer {
                                 alpha = coverAlpha
+                                scaleX = coverScale
+                                scaleY = coverScale
                             }
                     )
                     if (isBetaTest) {
@@ -395,30 +403,8 @@ fun LinkCard(
                         AnimatedContent(
                             targetState = if (isOverlayActive) currentMenuState else lastOpenMenuState,
                             transitionSpec = {
-                                (slideInVertically(
-                                    animationSpec = spring(
-                                        dampingRatio = 1.0f, // Critically damped - silky smooth, zero bounce
-                                        stiffness = Spring.StiffnessLow
-                                    )
-                                ) { height -> height / 5 } +
-                                        fadeIn(animationSpec = tween(350, easing = CubicBezierEasing(0.16f, 1.0f, 0.3f, 1.0f))) +
-                                        scaleIn(
-                                            initialScale = 0.88f,
-                                            animationSpec = spring(
-                                                dampingRatio = 1.0f,
-                                                stiffness = Spring.StiffnessLow
-                                            )
-                                        ))
-                                    .togetherWith(
-                                        slideOutVertically(
-                                            animationSpec = tween(220, easing = FastOutLinearInEasing)
-                                        ) { height -> height / 5 } +
-                                                fadeOut(animationSpec = tween(180)) +
-                                                scaleOut(
-                                                    targetScale = 0.88f,
-                                                    animationSpec = tween(180)
-                                                )
-                                    )
+                                fadeIn(animationSpec = tween(220, easing = LinearOutSlowInEasing)) togetherWith
+                                        fadeOut(animationSpec = tween(180, easing = FastOutLinearInEasing))
                             },
                             contentAlignment = Alignment.Center,
                             modifier = Modifier.fillMaxWidth(),
@@ -451,7 +437,8 @@ fun LinkCard(
                                 subMenuState = CardActionMenuState.DELETE_CONFIRM
                             },
                             showMagnet = hasAnyMagnet,
-                            showUrl = hasAnyUrl
+                            showUrl = hasAnyUrl,
+                            isExpanded = isOverlayActive
                         )
                     }
 
@@ -485,7 +472,8 @@ fun LinkCard(
                                 } else {
                                     handleUrlSelection(link.url4K)
                                 }
-                            }
+                            },
+                            isExpanded = isOverlayActive
                         )
                     }
 
@@ -497,7 +485,8 @@ fun LinkCard(
                             onConfirm = {
                                 onDismissActive()
                                 onDelete()
-                            }
+                            },
+                            isExpanded = isOverlayActive
                         )
                     }
 
@@ -510,7 +499,7 @@ fun LinkCard(
                             horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            // All actors list
+                            // All actors list with LinkCard.tsx staggered spring scale/translateY
                             link.actorIds.forEachIndexed { idx, actorId ->
                                 val actorEntity = fullActorsMap[actorId] ?: fullActorsMap[actorId.trim().lowercase()]
                                 val actorName = actorsMap[actorId] ?: actorEntity?.name ?: actorId
@@ -520,14 +509,56 @@ fun LinkCard(
                                 val actorPosY = actorEntity?.imagePositionY ?: 50f
                                 val realActorId = actorEntity?.id ?: actorId
 
-                                Column(
+                                val totalActorsCount = link.actorIds.size
+                                var isActorExpanded by remember { mutableStateOf(false) }
+
+                                LaunchedEffect(isOverlayActive) {
+                                    if (isOverlayActive) {
+                                        val delayMs = (idx * 45L)
+                                        if (delayMs > 0) kotlinx.coroutines.delay(delayMs)
+                                        isActorExpanded = true
+                                    } else {
+                                        val delayMs = (((totalActorsCount - 1 - idx).coerceAtLeast(0)) * 35L)
+                                        if (delayMs > 0) kotlinx.coroutines.delay(delayMs)
+                                        isActorExpanded = false
+                                    }
+                                }
+
+                                val entranceScale by animateFloatAsState(
+                                    targetValue = if (isActorExpanded) 1f else 0.15f,
+                                    animationSpec = if (isActorExpanded) {
+                                        spring(
+                                            dampingRatio = 0.58f,
+                                            stiffness = Spring.StiffnessLow
+                                        )
+                                    } else {
+                                        tween(durationMillis = 200, easing = FastOutLinearInEasing)
+                                    },
+                                    label = "actor_scale"
+                                )
+                                val alphaState by animateFloatAsState(
+                                    targetValue = if (isActorExpanded) 1f else 0f,
+                                    animationSpec = if (isActorExpanded) {
+                                        tween(durationMillis = 300, easing = LinearOutSlowInEasing)
+                                    } else {
+                                        tween(durationMillis = 180, easing = FastOutLinearInEasing)
+                                    },
+                                    label = "actor_alpha"
+                                )
+
+                                 Column(
                                     horizontalAlignment = Alignment.CenterHorizontally,
                                     verticalArrangement = Arrangement.spacedBy(6.dp),
                                     modifier = Modifier
+                                        .graphicsLayer {
+                                            scaleX = entranceScale
+                                            scaleY = entranceScale
+                                            alpha = alphaState
+                                        }
                                         .padding(horizontal = 4.dp)
                                         .width(72.dp)
                                         .clip(RectangleShape)
-                                        .clickable(enabled = isOverlayActive) {
+                                        .clickable(enabled = isOverlayActive && alphaState > 0.3f) {
                                             debouncedClick {
                                                 subMenuState = null
                                                 onDismissActive()

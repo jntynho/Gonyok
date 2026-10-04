@@ -35,6 +35,7 @@ import com.example.ui.ScreenState
 import com.example.ui.components.GoPlayer
 import com.example.ui.components.PhotosetLightbox
 import com.example.ui.components.SmoothProgressIndicator
+import com.example.ui.components.SplashScreen
 import com.example.ui.theme.LocalAccentColor
 import com.example.ui.theme.LocalVaultPalette
 import kotlinx.coroutines.launch
@@ -67,6 +68,10 @@ fun MainAppShell(viewModel: MainViewModel) {
     val resolvingCardId by viewModel.resolvingCardId.collectAsStateWithLifecycle()
     val videoResolutionError by viewModel.videoResolutionError.collectAsStateWithLifecycle()
     val activeInlineVideo by viewModel.activeInlineVideo.collectAsStateWithLifecycle()
+
+    val isSplashLoading by viewModel.isSplashLoading.collectAsStateWithLifecycle()
+    val splashProgress by viewModel.splashProgress.collectAsStateWithLifecycle()
+    val splashStatus by viewModel.splashStatus.collectAsStateWithLifecycle()
 
     val context = LocalContext.current
     val activity = remember(context) { context.findActivity() }
@@ -555,6 +560,18 @@ fun MainAppShell(viewModel: MainViewModel) {
                     }
                 }
             }
+        }
+
+        AnimatedVisibility(
+            visible = isSplashLoading,
+            enter = fadeIn(animationSpec = tween(200)),
+            exit = fadeOut(animationSpec = tween(450, easing = FastOutSlowInEasing)) + scaleOut(targetScale = 1.05f, animationSpec = tween(450, easing = FastOutSlowInEasing))
+        ) {
+            SplashScreen(
+                progress = splashProgress,
+                status = splashStatus,
+                modifier = Modifier.fillMaxSize()
+            )
         }
     }
 }

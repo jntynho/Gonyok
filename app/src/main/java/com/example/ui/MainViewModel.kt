@@ -77,6 +77,15 @@ data class ActiveInlineVideoPlayback(
 class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val repository: VaultRepository
 
+    private val _isSplashLoading = MutableStateFlow(true)
+    val isSplashLoading: StateFlow<Boolean> = _isSplashLoading.asStateFlow()
+
+    private val _splashProgress = MutableStateFlow(0.15f)
+    val splashProgress: StateFlow<Float> = _splashProgress.asStateFlow()
+
+    private val _splashStatus = MutableStateFlow("تجهيز التطبيق والموارد...")
+    val splashStatus: StateFlow<String> = _splashStatus.asStateFlow()
+
     init {
         val db = AppDatabase.getInstance(application)
         repository = VaultRepository(db)
@@ -85,8 +94,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun seedInitialDataIfEmpty() {
         viewModelScope.launch(Dispatchers.IO) {
-            // Post-frame delay to allow initial cold start rendering and entrance animations to finish smoothly
-            kotlinx.coroutines.delay(350L)
+            _splashProgress.value = 0.20f
+            _splashStatus.value = "تجهيز الإعدادات وقاعدة البيانات..."
+            kotlinx.coroutines.delay(250L)
 
             val existingLinks = repository.allLinks.first()
             
@@ -105,6 +115,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 repository.deleteLinkById(it.id)
             }
 
+            _splashProgress.value = 0.50f
+            _splashStatus.value = "تأكيد المفاتيح والتكاملات..."
+            kotlinx.coroutines.delay(250L)
+
             // Seed default API Keys ONLY ONCE on first install using defaultKeysSeeded flag
             val currentSett = repository.settings.first() ?: SettingsEntity()
             if (!currentSett.defaultKeysSeeded) {
@@ -117,6 +131,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 }
                 repository.updateSettings(updatedSett)
             }
+
+            _splashProgress.value = 0.80f
+            _splashStatus.value = "تحميل الوسائط والتأثيرات..."
+            kotlinx.coroutines.delay(250L)
 
             // Insert sample test dataset scenes, actors, and studios into the database atomically if empty
             val existingLinkIds = existingLinks.map { it.id }.toSet()
@@ -132,6 +150,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             if (missingSampleScenes.isNotEmpty()) {
                 repository.insertLinks(missingSampleScenes)
             }
+
+            _splashProgress.value = 1.0f
+            _splashStatus.value = "اكتمل التجهيز!"
+            kotlinx.coroutines.delay(450L)
+
+            _isSplashLoading.value = false
         }
     }
 
@@ -482,6 +506,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private var cachedActorScenes = emptyList<StashScene>()
     private var cachedStudioScenes = emptyList<StashScene>()
     private var cachedSexMexScenes = emptyList<StashScene>()
+    private var cachedActorPerformerResults = emptyList<StashPerformer>()
+    private var cachedStudioResults = emptyList<StashStudio>()
+    private var cachedSexMexPerformerResults = emptyList<StashPerformer>()
     private var cachedActorPerformer: StashPerformer? = null
     private var cachedStudioStudio: StashStudio? = null
     private var cachedSexMexPerformer: StashPerformer? = null
@@ -519,6 +546,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 cachedActorCurrentPage = _stashCurrentPage.value
                 cachedActorCanLoadMore = _stashCanLoadMore.value
                 cachedActorPerformer = _stashSelectedPerformer.value
+                cachedActorPerformerResults = _stashPerformerResults.value
             }
             StashSearchType.STUDIO -> {
                 cachedStudioScenes = _stashScenesList.value
@@ -526,6 +554,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 cachedStudioCurrentPage = _stashCurrentPage.value
                 cachedStudioCanLoadMore = _stashCanLoadMore.value
                 cachedStudioStudio = _stashSelectedStudio.value
+                cachedStudioResults = _stashStudioResults.value
             }
             StashSearchType.SEXMEX -> {
                 cachedSexMexScenes = _stashScenesList.value
@@ -533,6 +562,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 cachedSexMexCurrentPage = _stashCurrentPage.value
                 cachedSexMexCanLoadMore = _stashCanLoadMore.value
                 cachedSexMexPerformer = _stashSelectedPerformer.value
+                cachedSexMexPerformerResults = _stashPerformerResults.value
             }
         }
 
@@ -549,6 +579,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 _stashCurrentPage.value = cachedActorCurrentPage
                 _stashCanLoadMore.value = cachedActorCanLoadMore
                 _stashSelectedPerformer.value = cachedActorPerformer
+                _stashPerformerResults.value = cachedActorPerformerResults
+                _stashStudioResults.value = emptyList()
                 _stashSelectedStudio.value = null
             }
             StashSearchType.STUDIO -> {
@@ -558,6 +590,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 _stashCurrentPage.value = cachedStudioCurrentPage
                 _stashCanLoadMore.value = cachedStudioCanLoadMore
                 _stashSelectedStudio.value = cachedStudioStudio
+                _stashStudioResults.value = cachedStudioResults
+                _stashPerformerResults.value = emptyList()
                 _stashSelectedPerformer.value = null
             }
             StashSearchType.SEXMEX -> {
@@ -567,10 +601,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 _stashCurrentPage.value = cachedSexMexCurrentPage
                 _stashCanLoadMore.value = cachedSexMexCanLoadMore
                 _stashSelectedPerformer.value = cachedSexMexPerformer
+                _stashPerformerResults.value = cachedSexMexPerformerResults
+                _stashStudioResults.value = emptyList()
                 _stashSelectedStudio.value = null
             }
         }
-
     }
 
     fun toggleStashSceneSelection(sceneId: String) {
@@ -587,14 +622,25 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         stashScenesJob?.cancel()
         stashActorQuery = ""
         stashStudioQuery = ""
+        stashSexMexQuery = ""
         cachedActorScenes = emptyList()
         cachedStudioScenes = emptyList()
+        cachedSexMexScenes = emptyList()
+        cachedActorPerformerResults = emptyList()
+        cachedStudioResults = emptyList()
+        cachedSexMexPerformerResults = emptyList()
+        cachedActorPerformer = null
+        cachedStudioStudio = null
+        cachedSexMexPerformer = null
         cachedActorTotalCount = 0
         cachedStudioTotalCount = 0
+        cachedSexMexTotalCount = 0
         cachedActorCurrentPage = 1
         cachedStudioCurrentPage = 1
+        cachedSexMexCurrentPage = 1
         cachedActorCanLoadMore = false
         cachedStudioCanLoadMore = false
+        cachedSexMexCanLoadMore = false
         _stashSearchQuery.value = ""
         _isStashSearchExpanded.value = false
         _stashPerformerResults.value = emptyList()
@@ -631,6 +677,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
             when (searchTargetType) {
                 StashSearchType.ACTORS -> {
+                    _stashStudioResults.value = emptyList()
                     val res = StashDbApiService.searchPerformers(q, apiKey)
                     res.onSuccess { rawPerformers ->
                         val sorted = rawPerformers.sortedWith(
@@ -653,16 +700,20 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                             }
                         )
                         _stashPerformerResults.value = sorted
+                        cachedActorPerformerResults = sorted
                         _isStashLoadingEntities.value = false
                         if (sorted.isNotEmpty()) {
                             selectStashPerformer(sorted.first(), apiKey)
                         }
                     }.onFailure { err ->
                         _stashSearchError.value = err.message ?: "Failed to search actors"
+                        _stashPerformerResults.value = emptyList()
+                        cachedActorPerformerResults = emptyList()
                         _isStashLoadingEntities.value = false
                     }
                 }
                 StashSearchType.STUDIO -> {
+                    _stashPerformerResults.value = emptyList()
                     val res = StashDbApiService.searchStudios(q, apiKey)
                     res.onSuccess { rawStudios ->
                         val sorted = rawStudios.sortedWith(
@@ -681,22 +732,30 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                             }
                         )
                         _stashStudioResults.value = sorted
+                        cachedStudioResults = sorted
                         _isStashLoadingEntities.value = false
                         if (sorted.isNotEmpty()) {
                             selectStashStudio(sorted.first(), apiKey)
                         }
                     }.onFailure { err ->
                         _stashSearchError.value = err.message ?: "Failed to search studios"
+                        _stashStudioResults.value = emptyList()
+                        cachedStudioResults = emptyList()
                         _isStashLoadingEntities.value = false
                     }
                 }
                 StashSearchType.SEXMEX -> {
+                    _stashStudioResults.value = emptyList()
                     try {
                         val result = com.example.network.SexMexScraper.searchSexMex(q)
                         _stashPerformerResults.value = result.models
+                        cachedSexMexPerformerResults = result.models
                         _stashSelectedPerformer.value = result.models.firstOrNull()
+                        cachedSexMexPerformer = result.models.firstOrNull()
                         _stashScenesList.value = result.scenes
+                        cachedSexMexScenes = result.scenes
                         _stashTotalScenesCount.value = result.scenes.size
+                        cachedSexMexTotalCount = result.scenes.size
                         _stashCurrentPage.value = 1
                         _stashCanLoadMore.value = false
                         _isStashLoadingEntities.value = false
@@ -714,6 +773,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                         }
                     } catch (e: Exception) {
                         _stashSearchError.value = e.message ?: "Failed to search SexMex"
+                        _stashPerformerResults.value = emptyList()
+                        cachedSexMexPerformerResults = emptyList()
                         _isStashLoadingEntities.value = false
                         _isStashLoadingScenes.value = false
                     }
@@ -729,12 +790,15 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             _isStashLoadingScenes.value = true
             _stashSearchError.value = null
             _stashPerformerResults.value = emptyList()
+            cachedSexMexPerformerResults = emptyList()
             _stashSelectedPerformer.value = null
+            cachedSexMexPerformer = null
             _stashSelectedSceneIds.value = emptySet()
             _stashScenesList.value = emptyList()
             _stashCurrentPage.value = 1
             _stashCanLoadMore.value = false
             _stashSearchQuery.value = ""
+            stashSexMexQuery = ""
             try {
                 val latest = com.example.network.SexMexScraper.getLatestSexMexScenes()
                 _stashScenesList.value = latest
