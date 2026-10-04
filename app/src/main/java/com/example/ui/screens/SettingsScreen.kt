@@ -2,7 +2,6 @@ package com.example.ui.screens
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
-import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
@@ -15,7 +14,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.ArrowForwardIos
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
@@ -52,7 +50,6 @@ import com.example.ui.components.IntegrationsDropdownDebridSection
 import com.example.ui.components.NativeThemeSelector
 import com.example.ui.theme.LocalAccentColor
 import com.example.ui.theme.LocalVaultPalette
-import kotlinx.coroutines.launch
 
 /**
  * MUSE-REF: Switch colors matching the exact visual reference:
@@ -288,28 +285,6 @@ fun SettingsScreen(
     // Intercept hardware/gesture back press consistently across Settings and all sub-categories
     BackHandler(enabled = true) {
         handleBack()
-    }
-
-    val screenTitle = when (currentSection) {
-        SettingsSection.MAIN_MENU -> "Settings"
-        SettingsSection.DISPLAY -> "Display"
-        SettingsSection.PRIVACY -> "Privacy" // ORG-NEW
-        SettingsSection.INTEGRATIONS -> "Integrations"
-        SettingsSection.FILTER -> "Filter"
-        SettingsSection.DATA_BACKUP -> "Data & Backup"
-        SettingsSection.SAMPLE_DATA -> "Sample Data"
-    }
-
-    fun saveAllSettings() {
-        viewModel.updateSettings(
-            currentSettings.copy(
-                currentTheme = themeName,
-                accentColorHex = accentHex,
-                torboxApiKey = torboxKey.trim(),
-                realDebridApiKey = rdKey.trim(),
-                stashDbApiKey = stashDbKey.trim()
-            )
-        )
     }
 
     val topBarContent = LocalTopBarContent.current

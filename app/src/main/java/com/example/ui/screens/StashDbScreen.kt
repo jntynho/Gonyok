@@ -1,7 +1,5 @@
 package com.example.ui.screens
 
-import android.content.Intent
-import android.net.Uri
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
@@ -18,8 +16,6 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -76,9 +72,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.ui.components.SmoothProgressIndicator
-import com.example.data.local.entity.ActorEntity
-import com.example.data.local.entity.LinkEntity
-import com.example.data.local.entity.StudioEntity
 import com.example.network.StashDbApiService
 import com.example.network.StashPerformer
 import com.example.network.StashScene
@@ -89,11 +82,7 @@ import com.example.ui.theme.LocalAccentColor
 import com.example.ui.theme.LocalBetaTestPrivacy
 import com.example.ui.theme.LocalVaultPalette
 import com.example.ui.theme.privacyImageBlur
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.Locale
-import java.util.UUID
 
 import com.example.ui.StashSearchType
 
@@ -1805,60 +1794,6 @@ fun EmptyStateView(
             content()
         }
     }
-}
-
-/**
- * Smart relevance sorting algorithm for StashDB Performers
- */
-private fun sortPerformersByRelevance(performers: List<StashPerformer>, query: String): List<StashPerformer> {
-    val q = query.trim().lowercase()
-    if (q.isBlank()) return performers
-
-    return performers.sortedWith(
-        compareByDescending<StashPerformer> { performer ->
-            val name = performer.name.trim().lowercase()
-            val aliases = performer.aliases.map { it.trim().lowercase() }
-
-            when {
-                name == q -> 100
-                aliases.contains(q) -> 90
-                name.startsWith(q) -> 80
-                aliases.any { it.startsWith(q) } -> 70
-                name.contains(q) -> 60
-                aliases.any { it.contains(q) } -> 50
-                else -> 10
-            }
-        }.thenByDescending {
-            if (!it.imageUrl.isNullOrBlank()) 1 else 0
-        }.thenBy {
-            it.name.lowercase()
-        }
-    )
-}
-
-/**
- * Smart relevance sorting algorithm for StashDB Studios
- */
-private fun sortStudiosByRelevance(studios: List<StashStudio>, query: String): List<StashStudio> {
-    val q = query.trim().lowercase()
-    if (q.isBlank()) return studios
-
-    return studios.sortedWith(
-        compareByDescending<StashStudio> { studio ->
-            val name = studio.name.trim().lowercase()
-
-            when {
-                name == q -> 100
-                name.startsWith(q) -> 80
-                name.contains(q) -> 60
-                else -> 10
-            }
-        }.thenByDescending {
-            if (!it.logoUrl.isNullOrBlank()) 1 else 0
-        }.thenBy {
-            it.name.lowercase()
-        }
-    )
 }
 
 /**

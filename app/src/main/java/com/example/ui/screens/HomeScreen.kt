@@ -31,7 +31,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
@@ -63,10 +62,8 @@ import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.unit.Dp
 import com.example.network.StashDbApiService
-import com.example.ui.components.SmoothProgressIndicator
 import coil.compose.AsyncImage
 import com.example.data.local.entity.ActorEntity
-import com.example.data.local.entity.LinkEntity
 import com.example.data.local.entity.StudioEntity
 import com.example.ui.MainViewModel
 import com.example.ui.ScreenState

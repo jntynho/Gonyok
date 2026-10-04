@@ -4,14 +4,10 @@ import android.content.Context
 import android.content.ContextWrapper
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
-import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -23,23 +19,19 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.activity.ComponentActivity
 import androidx.core.app.PictureInPictureModeChangedInfo
 import androidx.core.util.Consumer
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.R
-import com.example.ui.ActiveVideoPlayback
 import com.example.ui.MainViewModel
 import com.example.ui.ScreenState
-import com.example.ui.components.ExoPlayerOverlay
 import com.example.ui.components.GoPlayer
 import com.example.ui.components.PhotosetLightbox
 import com.example.ui.components.SmoothProgressIndicator
@@ -389,7 +381,7 @@ fun MainAppShell(viewModel: MainViewModel) {
                         },
                         label = "global_top_bar_transition"
                     ) { screen ->
-                        val content = topBarMap[screen] ?: if (screen == currentScreen) topBarContent.value else null
+                        val content = if (screen == currentScreen) (topBarContent.value ?: topBarMap[screen]) else topBarMap[screen]
                         content?.invoke()
                     }
                 }

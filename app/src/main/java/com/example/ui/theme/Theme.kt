@@ -155,6 +155,5 @@ fun GVJVaultTheme(
 
 object VaultScrims {
     val Overlay = Color.Black.copy(alpha = 0.65f)
-    val Privacy = Color.Black.copy(alpha = 0.75f)
 }
 

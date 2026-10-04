@@ -16,7 +16,6 @@ import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
 import androidx.compose.foundation.shape.CircleShape

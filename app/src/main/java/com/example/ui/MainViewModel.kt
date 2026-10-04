@@ -1,7 +1,6 @@
 package com.example.ui
 
 import android.app.Application
-import android.util.Base64
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.data.local.AppDatabase
@@ -13,15 +12,9 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray
 import org.json.JSONObject
-import java.io.ByteArrayOutputStream
 import java.util.UUID
-import java.util.zip.GZIPInputStream
-import java.util.zip.GZIPOutputStream
 
 enum class SortMode {
     CARD_NEWEST,      // New (Card Date - Newest)
@@ -1666,12 +1659,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 _isFetchingMagnet.value = false
             }
         }
-    }
-
-    private fun compressGzip(str: String): ByteArray {
-        val byteOut = ByteArrayOutputStream()
-        GZIPOutputStream(byteOut).use { it.write(str.toByteArray(Charsets.UTF_8)) }
-        return byteOut.toByteArray()
     }
 }
 

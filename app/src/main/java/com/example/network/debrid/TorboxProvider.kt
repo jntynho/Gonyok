@@ -9,7 +9,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import okhttp3.FormBody
 import okhttp3.Request
-import org.json.JSONArray
 import org.json.JSONObject
 
 class TorboxProvider(private val apiKeyProvider: () -> String) : DebridProvider {

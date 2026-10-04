@@ -1,11 +1,8 @@
 package com.example.ui.components
 
-import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -37,7 +34,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.util.lerp
 import com.example.R
 
 object BtnColors {
@@ -52,35 +48,6 @@ object BtnColors {
 }
 
 val LocalActionsInteractive = compositionLocalOf { true }
-val LocalActionMenuProgress = compositionLocalOf { 1f }
-
-private val SoftDecelEasing = CubicBezierEasing(0.22f, 1.0f, 0.36f, 1.0f)
-
-/**
- * Ultra-smooth, hardware-accelerated staggered entrance modifier.
- * Animates buttons sequentially from Left to Right on entrance (Leftmost appears first),
- * and from Right to Left on exit (Rightmost disappears first).
- */
-fun Modifier.staggeredActionEntrance(
-    progress: Float,
-    indexFromLeft: Int,
-    totalItems: Int,
-    riseDistanceDp: Float = 36f
-): Modifier = this.graphicsLayer {
-    val maxDelay = 0.44f
-    val stepDelay = if (totalItems > 1) maxDelay / (totalItems - 1) else 0f
-    val delayFraction = (indexFromLeft * stepDelay).coerceIn(0f, maxDelay)
-    val rawProgress = if (delayFraction < 1f) {
-        ((progress - delayFraction) / (1f - delayFraction)).coerceIn(0f, 1f)
-    } else progress
-
-    val eased = SoftDecelEasing.transform(rawProgress)
-    alpha = eased
-    val s = lerp(0.76f, 1.0f, eased)
-    scaleX = s
-    scaleY = s
-    translationY = (1f - eased) * riseDistanceDp.dp.toPx()
-}
 
 private val ActionTextShadowSingle = TextStyle(
     platformStyle = PlatformTextStyle(includeFontPadding = false),

@@ -2,10 +2,8 @@ package com.example.network.debrid
 
 import android.util.Log
 import com.example.network.torrent.MagnetParser
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.supervisorScope
 import java.util.concurrent.ConcurrentHashMap
 
 enum class DebridOrder {

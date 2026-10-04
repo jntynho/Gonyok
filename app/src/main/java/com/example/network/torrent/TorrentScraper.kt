@@ -22,7 +22,6 @@ import java.net.URLEncoder
 import java.util.concurrent.ConcurrentHashMap
 import java.util.regex.Pattern
 import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
 import kotlin.random.Random
 
 object TorrentScraper {
@@ -430,7 +429,7 @@ object TorrentScraper {
         }
 
         val qMatcher = DETAIL_QUALITY_PATTERN.matcher(titleText)
-        val quality = if (qMatcher.find()) qMatcher.group(1).lowercase() else "1080p"
+        val quality = if (qMatcher.find()) qMatcher.group(1)?.lowercase() ?: "1080p" else "1080p"
         val is4k = quality.contains("2160p") || quality.contains("4k") || quality.contains("8k")
 
         return if (is4k) {
@@ -598,17 +597,17 @@ object TorrentScraper {
 
                 if (fetch1080Needed || fetch4kNeeded) {
                     val d1080Def = async {
-                        if (fetch1080Needed && url1080 != null) {
+                        if (fetch1080Needed) {
                             try {
-                                val html = fetchHtml(url1080, timeoutMs = 4000, context = context)
+                                val html = fetchHtml(url1080!!, timeoutMs = 4000, context = context)
                                 parseXxxclubDetail(html, url1080)?.magnet1080p
                             } catch (_: Exception) { null }
                         } else null
                     }
                     val d4kDef = async {
-                        if (fetch4kNeeded && url4k != null) {
+                        if (fetch4kNeeded) {
                             try {
-                                val html = fetchHtml(url4k, timeoutMs = 4000, context = context)
+                                val html = fetchHtml(url4k!!, timeoutMs = 4000, context = context)
                                 parseXxxclubDetail(html, url4k)?.magnet2160p
                             } catch (_: Exception) { null }
                         } else null

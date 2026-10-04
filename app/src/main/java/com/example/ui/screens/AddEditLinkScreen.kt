@@ -35,7 +35,6 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
@@ -66,7 +65,6 @@ fun AddEditLinkScreen(
     val accent = LocalAccentColor.current
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
-    val hapticFeedback = LocalHapticFeedback.current
     val context = androidx.compose.ui.platform.LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -301,7 +299,6 @@ fun AddEditLinkScreen(
     }
 
     // Maximum fully-rounded pill shape for all inputs & preview
-    val fieldShape = RoundedCornerShape(32.dp)
     val cardShape = RoundedCornerShape(20.dp)
     val chipShape = RoundedCornerShape(24.dp)
 

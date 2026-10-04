@@ -6,8 +6,6 @@ import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -18,7 +16,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
@@ -30,19 +27,9 @@ import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.BlurredEdgeTreatment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.luminance
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
@@ -53,14 +40,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.util.lerp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import androidx.compose.ui.res.painterResource
 import com.example.R
 import com.example.data.local.entity.ActorEntity
 import com.example.data.local.entity.LinkEntity
-import com.example.data.local.entity.StudioEntity
 import com.example.ui.ActiveInlineVideoPlayback
 import com.example.ui.theme.LocalAccentColor
 import com.example.ui.theme.LocalBetaTestPrivacy
@@ -69,8 +54,6 @@ import com.example.ui.theme.VaultScrims
 import com.example.ui.theme.privacyImageBlur
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.math.abs
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 private enum class CardActionMenuState {
@@ -205,16 +188,6 @@ fun LinkCard(
         }
     }
 
-    // O(1) Instant Lookup for Actors and Studio Names (No list iteration inside composition)
-    val actorsDisplayName = remember(link.actorIds, actorsMap) {
-        if (link.actorIds.isEmpty()) {
-            ""
-        } else {
-            val names = link.actorIds.map { id -> actorsMap[id] ?: id }
-            names.joinToString(", ")
-        }
-    }
-
     val studioName = remember(link.studioIds, studiosMap) {
         if (link.studioIds.isEmpty()) {
             ""
@@ -270,8 +243,6 @@ fun LinkCard(
     val hasMagnetHD = !link.magnet.isNullOrBlank()
     val hasMagnet4K = !link.magnet4K.isNullOrBlank()
     val hasAnyMagnet = hasMagnetHD || hasMagnet4K
-
-    val isPhotoset = link.galleryUrls.isNotEmpty() && !hasAnyUrl && !hasAnyMagnet
 
     // Native Smooth Cover Reveal Animation State
     var isImageLoaded by remember(link.coverImage) { mutableStateOf(false) }
